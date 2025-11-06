@@ -1,0 +1,6 @@
+[submodule "Neuroevolution-for-robotic-manipulator"]
+	path = Neuroevolution-for-robotic-manipulator
+	url = https://github.com/HalcoDraco/Neuroevolution-for-robotic-manipulator.git
+[submodule "evogym"]
+	path = evogym
+	url = https://github.com/HalcoDraco/evogym.git
