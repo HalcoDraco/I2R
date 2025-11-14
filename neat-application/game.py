@@ -1,0 +1,90 @@
+import numpy as np
+
+class Game:
+
+    def __init__(self, 
+                 num_bullets, 
+                 radius_bullets = 0.05, 
+                 radius_player = 0.05, 
+                 bullets_step = 0.01, 
+                 player_step = 0.01):
+        
+        self.num_bullets = num_bullets
+        self.radius_bullets = radius_bullets
+        self.radius_player = radius_player
+        self.bullets_step = bullets_step
+        self.player_step = player_step
+
+        
+        self.positions = np.random.rand(num_bullets + 1, 2) * (1.0 - 2.0 * (radius_bullets+bullets_step)) + radius_bullets + bullets_step # Random positions in range [radius_bullets+bullets_step, 1 - (radius_bullets+bullets_step)]
+        self.positions[0, :] = 0.5  # Player starts at the center
+
+        half_bullets = num_bullets // 2
+        self.positions[1:half_bullets//2 + 1, 0] = radius_bullets + bullets_step # Top bullets
+        self.positions[half_bullets//2 + 1:half_bullets + 1, 0] = 1.0 - (radius_bullets + bullets_step) # Bottom bullets
+        self.positions[half_bullets + 1:half_bullets + half_bullets//2 + 1, 1] = radius_bullets + bullets_step # Left bullets
+        self.positions[half_bullets + half_bullets//2 + 1:, 1] = 1.0 - (radius_bullets + bullets_step) # Right bullets
+
+
+        self.directions = np.random.rand(num_bullets + 1, 2)
+        self.directions = self.directions * 2.0 - 1.0  # Random directions in range [-1, 1]
+
+        half_bullets = num_bullets // 2
+        self.directions[1:half_bullets//2 + 1, 0] = np.random.rand() * 0.8 + 0.2 # Top bullets
+        self.directions[half_bullets//2 + 1:half_bullets + 1, 0] = -(np.random.rand() * 0.8 + 0.2) # Bottom bullets
+        self.directions[half_bullets + 1:half_bullets + half_bullets//2 + 1, 1] = np.random.rand() * 0.8 + 0.2 # Left bullets
+        self.directions[half_bullets + half_bullets//2 + 1:, 1] = -(np.random.rand() * 0.8 + 0.2) # Right bullets
+
+        self.normalize_directions()
+    
+    def normalize_directions(self):
+        norms = np.linalg.norm(self.directions, axis=1, keepdims=True)
+        self.directions = self.directions / norms
+
+    def step(self, player_direction):
+
+        # Check player collision
+        distances = np.linalg.norm(self.positions[1:, :] - self.positions[0, :], axis=1)
+        if np.any(distances < self.radius_bullets + self.radius_player) or np.any(self.positions[0, :] < self.radius_player) or np.any(self.positions[0, :] > 1.0 - self.radius_player):
+            return #TODO: Handle collision
+
+        # Set new player direction
+        if type(player_direction) is float:
+            # Assume player_direction is in [0, 1) representing an angle
+            # Convert to Cartesian coordinates
+            angle = player_direction * 2.0 * np.pi
+            player_direction = np.array([np.cos(angle), np.sin(angle)])
+        else:
+            raise ValueError("player_direction must be a float in [0, 1)")
+
+        self.directions[0, :] = player_direction
+
+        # Move game entities
+        self.positions[1:, :] += self.directions[1:, :] * self.bullets_step
+        self.positions[0, :] += self.directions[0, :] * self.player_step
+
+        # Handle boundary collisions for bullets
+        under_mask = self.positions[1:, :] < self.radius_bullets + 0.2
+        self.positions[1:, :][under_mask] = self.radius_bullets
+        over_mask = self.positions[1:, :] > 1.0 - self.radius_bullets - 0.2
+        self.positions[1:, :][over_mask] = 1.0 - self.radius_bullets
+
+        compound_mask = under_mask * 1.0 + over_mask * -1.0
+
+        self.directions[1:, :] *= (compound_mask == 0)
+        self.directions[1:, :] += compound_mask * (np.random.rand(*compound_mask.shape) * 0.8 + 0.2)
+        aux_mask = np.tile(np.any(compound_mask, axis=1, keepdims=True), 2) * (compound_mask == 0)
+        self.directions[1:, :] *= ~aux_mask
+        self.directions[1:, :] += aux_mask * (np.random.rand(*aux_mask.shape) * 2.0 - 1.0)
+
+        self.normalize_directions()
+
+
+if __name__ == "__main__":
+    game = Game(num_bullets=12)
+    print(game.positions)
+    game.step(0.25)
+    print(game.directions)
+    
+
+
