@@ -1,0 +1,48 @@
+from game import Game
+import pygame
+import numpy as np
+
+def draw_game(window, game):
+    window.fill((0, 0, 0))  # Clear screen with black
+
+    # Draw player
+    player_pos = (int(game.positions[0, 0] * width), int(game.positions[0, 1] * height))
+    pygame.draw.circle(window, (0, 255, 0), player_pos, int(game.radius_player * width))
+
+    # Draw bullets
+    for i in range(1, game.num_bullets + 1):
+        bullet_pos = (int(game.positions[i, 0] * width), int(game.positions[i, 1] * height))
+        pygame.draw.circle(window, (255, 0, 0), bullet_pos, int(game.radius_bullets * width))
+
+    pygame.display.flip()  # Update the display
+
+width, height = 600, 600
+
+pygame.init()
+window = pygame.display.set_mode((width, height))
+clock = pygame.time.Clock()
+
+game = Game(num_bullets=12)
+
+running = True
+while running:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+    
+    # get mouse position in x y and convert to [0, 1) as the angle with respect player position
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    player_x, player_y = game.positions[0, 0] * width, game.positions[0, 1] * height
+    print(f"Mouse: ({mouse_x}, {mouse_y}), Player: ({player_x}, {player_y})")
+    angle = np.arctan2(mouse_y - player_y, mouse_x - player_x)
+    print(f"Angle: {angle}")
+    if angle < 0:
+        angle += 2.0 * np.pi
+    player_direction = angle / (2.0 * np.pi)
+
+    game.step(player_direction)
+    draw_game(window, game)
+    clock.tick(60)  # Limit to 60 FPS
+pygame.quit()
+
+

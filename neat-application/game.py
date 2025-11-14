@@ -4,10 +4,10 @@ class Game:
 
     def __init__(self, 
                  num_bullets, 
-                 radius_bullets = 0.05, 
-                 radius_player = 0.05, 
-                 bullets_step = 0.01, 
-                 player_step = 0.01):
+                 radius_bullets = 0.02, 
+                 radius_player = 0.02, 
+                 bullets_step = 0.005, 
+                 player_step = 0.005):
         
         self.num_bullets = num_bullets
         self.radius_bullets = radius_bullets
@@ -49,13 +49,10 @@ class Game:
             return #TODO: Handle collision
 
         # Set new player direction
-        if type(player_direction) is float:
-            # Assume player_direction is in [0, 1) representing an angle
-            # Convert to Cartesian coordinates
-            angle = player_direction * 2.0 * np.pi
-            player_direction = np.array([np.cos(angle), np.sin(angle)])
-        else:
-            raise ValueError("player_direction must be a float in [0, 1)")
+        # Assume player_direction is in [0, 1) representing an angle
+        # Convert to Cartesian coordinates
+        angle = player_direction * 2.0 * np.pi
+        player_direction = np.array([np.cos(angle), np.sin(angle)])
 
         self.directions[0, :] = player_direction
 
@@ -64,9 +61,9 @@ class Game:
         self.positions[0, :] += self.directions[0, :] * self.player_step
 
         # Handle boundary collisions for bullets
-        under_mask = self.positions[1:, :] < self.radius_bullets + 0.2
+        under_mask = self.positions[1:, :] < self.radius_bullets
         self.positions[1:, :][under_mask] = self.radius_bullets
-        over_mask = self.positions[1:, :] > 1.0 - self.radius_bullets - 0.2
+        over_mask = self.positions[1:, :] > 1.0 - self.radius_bullets
         self.positions[1:, :][over_mask] = 1.0 - self.radius_bullets
 
         compound_mask = under_mask * 1.0 + over_mask * -1.0
@@ -78,13 +75,4 @@ class Game:
         self.directions[1:, :] += aux_mask * (np.random.rand(*aux_mask.shape) * 2.0 - 1.0)
 
         self.normalize_directions()
-
-
-if __name__ == "__main__":
-    game = Game(num_bullets=12)
-    print(game.positions)
-    game.step(0.25)
-    print(game.directions)
-    
-
 
