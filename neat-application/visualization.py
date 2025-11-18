@@ -22,8 +22,9 @@ pygame.init()
 window = pygame.display.set_mode((width, height))
 clock = pygame.time.Clock()
 
-game = Game(num_bullets=12)
+game = Game(num_bullets=36)
 
+ticks = 0
 running = True
 while running:
     for event in pygame.event.get():
@@ -33,16 +34,18 @@ while running:
     # get mouse position in x y and convert to [0, 1) as the angle with respect player position
     mouse_x, mouse_y = pygame.mouse.get_pos()
     player_x, player_y = game.positions[0, 0] * width, game.positions[0, 1] * height
-    print(f"Mouse: ({mouse_x}, {mouse_y}), Player: ({player_x}, {player_y})")
     angle = np.arctan2(mouse_y - player_y, mouse_x - player_x)
-    print(f"Angle: {angle}")
     if angle < 0:
         angle += 2.0 * np.pi
     player_direction = angle / (2.0 * np.pi)
 
-    game.step(player_direction)
+    if not game.step(player_direction):
+        running = False  # Game over
+
     draw_game(window, game)
-    clock.tick(60)  # Limit to 60 FPS
+    clock.tick(30)  # Limit to 60 FPS
+    ticks += 1
 pygame.quit()
 
+print(f"Game over! Survived for {ticks} ticks.")
 

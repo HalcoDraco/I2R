@@ -41,20 +41,38 @@ class Game:
         norms = np.linalg.norm(self.directions, axis=1, keepdims=True)
         self.directions = self.directions / norms
 
-    def step(self, player_direction):
+    def step(self, player_direction) -> bool:
+        """
+        Advances the game state by one step.
 
-        assert 0.0 <= player_direction < 1.0, "player_direction must be in [0, 1)"
+        Parameters
+        ----------
+        player_direction: float or tuple
+            If float, represents an angle in [0, 1)
+            If tuple, represents the (x, y) direction vector.
+            
+        Returns
+        -------
+        bool
+            True if the game continues, False if the player has collided (game over).
+        """
+
+        if type(player_direction) is not tuple:
+            angle = player_direction * 2.0 * np.pi
+            player_direction = np.array([np.cos(angle), np.sin(angle)])
+        else:
+            player_direction = np.array(player_direction)
+        player_direction = player_direction / np.linalg.norm(player_direction)
 
         # Check player collision
         distances = np.linalg.norm(self.positions[1:, :] - self.positions[0, :], axis=1)
         if np.any(distances < self.radius_bullets + self.radius_player) or np.any(self.positions[0, :] < self.radius_player) or np.any(self.positions[0, :] > 1.0 - self.radius_player):
-            return #TODO: Handle collision
+            return False # Game over
 
         # Set new player direction
         # Assume player_direction is in [0, 1) representing an angle
         # Convert to Cartesian coordinates
-        angle = player_direction * 2.0 * np.pi
-        player_direction = np.array([np.cos(angle), np.sin(angle)])
+        
 
         self.directions[0, :] = player_direction
 
@@ -77,4 +95,6 @@ class Game:
         self.directions[1:, :] += aux_mask * (np.random.rand(*aux_mask.shape) * 2.0 - 1.0)
 
         self.normalize_directions()
+
+        return True
 
