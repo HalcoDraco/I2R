@@ -33,9 +33,10 @@ def game_loop(game: Game, actor: neat.nn.FeedForwardNetwork = None):
                 running = False
         
         if actor is not None:
-            state = game.state()
+            state = game.get_state_velocities()
             output = actor.activate(state)
             player_direction = (output[0], output[1])
+            print(f"Tick {ticks}: Player direction: {player_direction}")
         else:
             # get mouse position in x y and convert to [0, 1) as the angle with respect player position
             mouse_x, mouse_y = pygame.mouse.get_pos()

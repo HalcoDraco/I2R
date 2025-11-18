@@ -41,10 +41,10 @@ class Game:
         norms = np.linalg.norm(self.directions, axis=1, keepdims=True)
         self.directions = self.directions / norms
 
-    def state(self):
+    def get_state(self):
         """
-        Returns the current game state. State consists of x, y of the player 
-        and a 2D vector for each bullet representing its relative position to the player.
+        Returns the current game state. State consists of x, y of the player and
+        x, y of each bullet, all between 0 and 1.
 
         Returns
         -------
@@ -52,9 +52,21 @@ class Game:
             The current game state as a 1D array.
         """
 
-        relative_positions = self.positions[1:, :] - self.positions[0, :]
-        state = np.concatenate(([self.positions[0, 0], self.positions[0, 1]], relative_positions.flatten()))
-        return state
+        return self.positions.flatten()
+    
+    def get_state_velocities(self):
+        """
+        Returns the current game state. State consists of x, y of the player and
+        x, y of each bullet, all between 0 and 1, as well as the x, y velocities
+        of each entity.
+
+        Returns
+        -------
+        np.ndarray
+            The current game state as a 1D array.
+        """
+
+        return np.concatenate((self.positions.flatten(), self.directions.flatten()))
 
     def step(self, player_direction) -> bool:
         """

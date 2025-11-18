@@ -1,12 +1,15 @@
 import neat 
 from game import Game
-from visualization import game_loop
+from game_visualization import game_loop
 from neat.parallel import ParallelEvaluator
+import visualize
+import pickle
+import multiprocessing
 
 CONFIG_PATH = "neat_config"
 MULTIPROCESSING = True
 NUM_BULLETS = 12
-GENERATIONS = 10000
+GENERATIONS = 1500
 
 def evaluate_genome(genome, config):
     """
@@ -24,14 +27,14 @@ def evaluate_genome(genome, config):
     float
         The fitness score of the genome.
     """
-    net = neat.nn.RecurrentNetwork.create(genome, config)
+    net = neat.nn.FeedForwardNetwork.create(genome, config)
     game = Game(num_bullets=NUM_BULLETS)
 
     max_steps = 10000
     step = 0
     run = True
     while step < max_steps and run:
-        state = game.state()
+        state = game.get_state_velocities()
         output = net.activate(state)
         # Output is expected to be two values representing x and y direction
         direction = (output[0], output[1])
@@ -71,10 +74,28 @@ if __name__ == "__main__":
     p.add_reporter(stats)
 
     if MULTIPROCESSING:
-        pe = ParallelEvaluator(16, evaluate_genome)
+        pe = ParallelEvaluator(multiprocessing.cpu_count(), evaluate_genome)
         winner = p.run(pe.evaluate, n=GENERATIONS)
     else:
         winner = p.run(evaluate_genomes, n=GENERATIONS)
+    
+    
+    # Save the winner.
+    with open('winner-feedforward', 'wb') as f:
+        pickle.dump(winner, f)
+
+    print(winner)
+
+    visualize.plot_stats(stats, ylog=True, view=True, filename="feedforward-fitness.svg")
+    visualize.plot_species(stats, view=True, filename="feedforward-speciation.svg")
+
+    node_names = {-1: 'x', -2: 'dx', -3: 'theta', -4: 'dtheta', 0: 'control'}
+    visualize.draw_net(config, winner, True, node_names=node_names)
+
+    visualize.draw_net(config, winner, view=True, node_names=node_names,
+                       filename="winner-feedforward.gv")
+    visualize.draw_net(config, winner, view=True, node_names=node_names,
+                       filename="winner-feedforward-enabled-pruned.gv", prune_unused=True)
 
     # Test the winner
     game = Game(num_bullets=NUM_BULLETS)
