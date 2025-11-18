@@ -43,6 +43,8 @@ class Game:
 
     def step(self, player_direction):
 
+        assert 0.0 <= player_direction < 1.0, "player_direction must be in [0, 1)"
+
         # Check player collision
         distances = np.linalg.norm(self.positions[1:, :] - self.positions[0, :], axis=1)
         if np.any(distances < self.radius_bullets + self.radius_player) or np.any(self.positions[0, :] < self.radius_player) or np.any(self.positions[0, :] > 1.0 - self.radius_player):
