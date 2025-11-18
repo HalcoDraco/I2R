@@ -5,6 +5,8 @@ from neat.parallel import ParallelEvaluator
 
 CONFIG_PATH = "neat_config"
 MULTIPROCESSING = True
+NUM_BULLETS = 12
+GENERATIONS = 10000
 
 def evaluate_genome(genome, config):
     """
@@ -23,7 +25,7 @@ def evaluate_genome(genome, config):
         The fitness score of the genome.
     """
     net = neat.nn.RecurrentNetwork.create(genome, config)
-    game = Game(num_bullets=36)
+    game = Game(num_bullets=NUM_BULLETS)
 
     max_steps = 10000
     step = 0
@@ -54,30 +56,31 @@ def evaluate_genomes(genomes, config):
         fitness = evaluate_genome(genome, config)
         genome.fitness = fitness
 
-config = neat.Config(
-    neat.DefaultGenome,
-    neat.DefaultReproduction,
-    neat.DefaultSpeciesSet,
-    neat.DefaultStagnation,
-    CONFIG_PATH,
-)
+if __name__ == "__main__":
+    config = neat.Config(
+        neat.DefaultGenome,
+        neat.DefaultReproduction,
+        neat.DefaultSpeciesSet,
+        neat.DefaultStagnation,
+        CONFIG_PATH,
+    )
 
-p = neat.Population(config)
-p.add_reporter(neat.StdOutReporter(True))
-stats = neat.StatisticsReporter()
-p.add_reporter(stats)
+    p = neat.Population(config)
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
 
-if MULTIPROCESSING:
-    pe = ParallelEvaluator(14, evaluate_genome)
-    winner = p.run(pe.evaluate, n=300)
-else:
-    winner = p.run(evaluate_genomes, n=300)
+    if MULTIPROCESSING:
+        pe = ParallelEvaluator(16, evaluate_genome)
+        winner = p.run(pe.evaluate, n=GENERATIONS)
+    else:
+        winner = p.run(evaluate_genomes, n=GENERATIONS)
 
-# Test the winner
-game = Game(num_bullets=36)
-net = neat.nn.FeedForwardNetwork.create(winner, config)
+    # Test the winner
+    game = Game(num_bullets=NUM_BULLETS)
+    net = neat.nn.FeedForwardNetwork.create(winner, config)
 
-game_loop(game, net)
+    game_loop(game, net)
 
 
 

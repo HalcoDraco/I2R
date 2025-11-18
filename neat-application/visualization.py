@@ -56,6 +56,3 @@ def game_loop(game: Game, actor: neat.nn.FeedForwardNetwork = None):
 
     print(f"Game over! Survived for {ticks} ticks.")
 
-if __name__ == "__main__":
-    game = Game(num_bullets=36)
-    game_loop(game)
