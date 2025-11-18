@@ -41,6 +41,21 @@ class Game:
         norms = np.linalg.norm(self.directions, axis=1, keepdims=True)
         self.directions = self.directions / norms
 
+    def state(self):
+        """
+        Returns the current game state. State consists of x, y of the player 
+        and a 2D vector for each bullet representing its relative position to the player.
+
+        Returns
+        -------
+        np.ndarray
+            The current game state as a 1D array.
+        """
+
+        relative_positions = self.positions[1:, :] - self.positions[0, :]
+        state = np.concatenate(([self.positions[0, 0], self.positions[0, 1]], relative_positions.flatten()))
+        return state
+
     def step(self, player_direction) -> bool:
         """
         Advances the game state by one step.
@@ -62,7 +77,11 @@ class Game:
             player_direction = np.array([np.cos(angle), np.sin(angle)])
         else:
             player_direction = np.array(player_direction)
-        player_direction = player_direction / np.linalg.norm(player_direction)
+            norm = np.linalg.norm(player_direction)
+            if norm == 0:
+                player_direction[0] = 1.0
+            else:
+                player_direction = player_direction / np.linalg.norm(player_direction)
 
         # Check player collision
         distances = np.linalg.norm(self.positions[1:, :] - self.positions[0, :], axis=1)
@@ -97,4 +116,3 @@ class Game:
         self.normalize_directions()
 
         return True
-
