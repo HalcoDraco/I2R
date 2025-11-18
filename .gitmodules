@@ -4,3 +4,9 @@
 [submodule "evogym"]
 	path = evogym
 	url = https://github.com/HalcoDraco/evogym.git
+[submodule "neat-python"]
+	path = neat-python
+	url = https://github.com/HalcoDraco/neat-python.git
+[submodule "evogym-design-tool"]
+	path = evogym-design-tool
+	url = https://github.com/HalcoDraco/evogym-design-tool.git
