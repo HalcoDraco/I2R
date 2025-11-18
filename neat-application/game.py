@@ -35,6 +35,10 @@ class Game:
         self.directions[half_bullets + 1:half_bullets + half_bullets//2 + 1, 1] = np.random.rand() * 0.8 + 0.2 # Left bullets
         self.directions[half_bullets + half_bullets//2 + 1:, 1] = -(np.random.rand() * 0.8 + 0.2) # Right bullets
 
+        # Force first bullet to point to the player
+        vec_to_player = self.positions[0, :] - self.positions[1, :]
+        self.directions[1, :] = vec_to_player / np.linalg.norm(vec_to_player)
+
         self.normalize_directions()
     
     def normalize_directions(self):

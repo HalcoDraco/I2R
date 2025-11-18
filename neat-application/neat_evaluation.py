@@ -9,7 +9,8 @@ import multiprocessing
 CONFIG_PATH = "neat_config"
 MULTIPROCESSING = True
 NUM_BULLETS = 12
-GENERATIONS = 1500
+GENERATIONS = 1000
+NUM_RUNS_PER_GENOME = 3
 
 def evaluate_genome(genome, config):
     """
@@ -28,20 +29,25 @@ def evaluate_genome(genome, config):
         The fitness score of the genome.
     """
     net = neat.nn.FeedForwardNetwork.create(genome, config)
-    game = Game(num_bullets=NUM_BULLETS)
+    fitnesses = []
 
-    max_steps = 10000
-    step = 0
-    run = True
-    while step < max_steps and run:
-        state = game.get_state_velocities()
-        output = net.activate(state)
-        # Output is expected to be two values representing x and y direction
-        direction = (output[0], output[1])
-        run = game.step(direction)
-        step += 1
+    for _ in range(NUM_RUNS_PER_GENOME):
+        game = Game(num_bullets=NUM_BULLETS)
+
+        max_steps = 10000
+        step = 0
+        run = True
+        while step < max_steps and run:
+            state = game.get_state_velocities()
+            output = net.activate(state)
+            # Output is expected to be two values representing x and y direction
+            direction = (output[0], output[1])
+            run = game.step(direction)
+            step += 1
     
-    return step  # Fitness is the number of steps survived
+        fitnesses.append(step)
+
+    return sum(fitnesses) / len(fitnesses)
 
 def evaluate_genomes(genomes, config):
     """
