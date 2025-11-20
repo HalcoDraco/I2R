@@ -71,6 +71,46 @@ class Game:
         """
 
         return np.concatenate((self.positions.flatten(), self.directions.flatten()))
+    
+    def get_local_state(self):
+        """
+        Returns the position of the player and the relative position of the nearest bullet.
+
+        Returns
+        -------
+        np.ndarray
+            The local game state as a 1D array.
+        """
+
+        player_pos = self.positions[0, :]
+        bullet_positions = self.positions[1:, :]
+        relative_positions = bullet_positions - player_pos
+        distances = np.linalg.norm(relative_positions, axis=1)
+        nearest_bullet_idx = np.argmin(distances)
+        nearest_bullet_rel_pos = relative_positions[nearest_bullet_idx, :]
+
+        return np.concatenate((player_pos, nearest_bullet_rel_pos))
+    
+    def get_local_state_velocities(self):
+        """
+        Returns the position of the player and the relative position and velocity of the nearest bullet.
+
+        Returns
+        -------
+        np.ndarray
+            The local game state with velocities as a 1D array.
+        """
+
+        player_pos = self.positions[0, :]
+        bullet_positions = self.positions[1:, :]
+        bullet_directions = self.directions[1:, :]
+        relative_positions = bullet_positions - player_pos
+        distances = np.linalg.norm(relative_positions, axis=1)
+        nearest_bullet_idx = np.argmin(distances)
+        nearest_bullet_rel_pos = relative_positions[nearest_bullet_idx, :]
+        nearest_bullet_dir = bullet_directions[nearest_bullet_idx, :]
+
+        return np.concatenate((player_pos, nearest_bullet_rel_pos, nearest_bullet_dir))
 
     def step(self, player_direction) -> bool:
         """
@@ -102,18 +142,14 @@ class Game:
         # Check player collision
         distances = np.linalg.norm(self.positions[1:, :] - self.positions[0, :], axis=1)
         if np.any(distances < self.radius_bullets + self.radius_player) or np.any(self.positions[0, :] < self.radius_player) or np.any(self.positions[0, :] > 1.0 - self.radius_player):
-            return False # Game over
-
-        # Set new player direction
-        # Assume player_direction is in [0, 1) representing an angle
-        # Convert to Cartesian coordinates
-        
+            return False # Game over      
 
         self.directions[0, :] = player_direction
 
         # Move game entities
         self.positions[1:, :] += self.directions[1:, :] * self.bullets_step
         self.positions[0, :] += self.directions[0, :] * self.player_step
+        
 
         # Handle boundary collisions for bullets
         under_mask = self.positions[1:, :] < self.radius_bullets
