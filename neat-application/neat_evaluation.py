@@ -9,8 +9,8 @@ import multiprocessing
 CONFIG_PATH = "neat_config"
 MULTIPROCESSING = True
 NUM_BULLETS = 24
-GENERATIONS = 150
-NUM_RUNS_PER_GENOME = 3
+GENERATIONS = 1500
+NUM_RUNS_PER_GENOME = 4
 
 def evaluate_genome(genome, config):
     """
@@ -38,10 +38,11 @@ def evaluate_genome(genome, config):
         step = 0
         run = True
         while step < max_steps and run:
-            state = game.get_local_state_velocities()
+            state = game.get_local_state_velocities(3)
             output = net.activate(state)
             # Output is expected to be two values representing x and y direction
-            direction = (output[0], output[1])
+            # direction = (output[0], output[1])
+            direction = output[0]
             run = game.step(direction)
             step += 1
     

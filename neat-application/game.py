@@ -72,9 +72,14 @@ class Game:
 
         return np.concatenate((self.positions.flatten(), self.directions.flatten()))
     
-    def get_local_state(self):
+    def get_local_state(self, nearest_n = 1):
         """
-        Returns the position of the player and the relative position of the nearest bullet.
+        Returns the position of the player and the relative positions of the nearest n bullets.
+
+        Parameters
+        ----------
+        nearest_n : int
+            Number of nearest bullets to consider.
 
         Returns
         -------
@@ -86,14 +91,19 @@ class Game:
         bullet_positions = self.positions[1:, :]
         relative_positions = bullet_positions - player_pos
         distances = np.linalg.norm(relative_positions, axis=1)
-        nearest_bullet_idx = np.argmin(distances)
-        nearest_bullet_rel_pos = relative_positions[nearest_bullet_idx, :]
+        nearest_bullet_indices = np.argsort(distances)[:nearest_n]
+        nearest_bullets_rel_pos = relative_positions[nearest_bullet_indices, :]
 
-        return np.concatenate((player_pos, nearest_bullet_rel_pos))
+        return np.concatenate((player_pos, nearest_bullets_rel_pos.flatten()))
     
-    def get_local_state_velocities(self):
+    def get_local_state_velocities(self, nearest_n = 1):
         """
-        Returns the position of the player and the relative position and velocity of the nearest bullet.
+        Returns the position of the player and the relative positions and velocities of the nearest n bullets.
+        
+        Parameters
+        ----------
+        nearest_n : int
+            Number of nearest bullets to consider.
 
         Returns
         -------
@@ -106,11 +116,11 @@ class Game:
         bullet_directions = self.directions[1:, :]
         relative_positions = bullet_positions - player_pos
         distances = np.linalg.norm(relative_positions, axis=1)
-        nearest_bullet_idx = np.argmin(distances)
-        nearest_bullet_rel_pos = relative_positions[nearest_bullet_idx, :]
-        nearest_bullet_dir = bullet_directions[nearest_bullet_idx, :]
+        nearest_bullet_indices = np.argsort(distances)[:nearest_n]
+        nearest_bullets_rel_pos = relative_positions[nearest_bullet_indices, :]
+        nearest_bullets_dirs = bullet_directions[nearest_bullet_indices, :]
 
-        return np.concatenate((player_pos, nearest_bullet_rel_pos, nearest_bullet_dir))
+        return np.concatenate((player_pos, nearest_bullets_rel_pos.flatten(), nearest_bullets_dirs.flatten()))
 
     def step(self, player_direction) -> bool:
         """
