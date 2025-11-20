@@ -74,7 +74,7 @@ class Game:
     
     def get_local_state(self, nearest_n = 1):
         """
-        Returns the position of the player and the relative positions of the nearest n bullets.
+        Returns the relative positions of the nearest n bullets and the nearest wall.
 
         Parameters
         ----------
@@ -93,8 +93,15 @@ class Game:
         distances = np.linalg.norm(relative_positions, axis=1)
         nearest_bullet_indices = np.argsort(distances)[:nearest_n]
         nearest_bullets_rel_pos = relative_positions[nearest_bullet_indices, :]
+        nearest_wall_rel_pos = np.array([
+            -player_pos[0] if player_pos[0] < 0.5 else  # Top wall
+            1.0 - player_pos[0],  # Bottom wall
+            -player_pos[1] if player_pos[1] < 0.5 else  # Left wall
+            1.0 - player_pos[1]   # Right wall
+        ])
 
-        return np.concatenate((player_pos, nearest_bullets_rel_pos.flatten()))
+        return np.concatenate((nearest_wall_rel_pos, nearest_bullets_rel_pos.flatten()))
+
     
     def get_local_state_velocities(self, nearest_n = 1):
         """
@@ -119,8 +126,13 @@ class Game:
         nearest_bullet_indices = np.argsort(distances)[:nearest_n]
         nearest_bullets_rel_pos = relative_positions[nearest_bullet_indices, :]
         nearest_bullets_dirs = bullet_directions[nearest_bullet_indices, :]
-
-        return np.concatenate((player_pos, nearest_bullets_rel_pos.flatten(), nearest_bullets_dirs.flatten()))
+        nearest_wall_rel_pos = np.array([
+            -player_pos[0] if player_pos[0] < 0.5 else  # Top wall
+            1.0 - player_pos[0],  # Bottom wall
+            -player_pos[1] if player_pos[1] < 0.5 else  # Left wall
+            1.0 - player_pos[1]   # Right wall
+        ])
+        return np.concatenate((nearest_wall_rel_pos, nearest_bullets_rel_pos.flatten(), nearest_bullets_dirs.flatten()))
 
     def step(self, player_direction) -> bool:
         """

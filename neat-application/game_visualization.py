@@ -33,7 +33,7 @@ def game_loop(game: Game, actor: neat.nn.FeedForwardNetwork = None):
                 running = False
         
         if actor is not None:
-            state = game.get_local_state_velocities(3)
+            state = game.get_local_state_velocities(5)
             output = actor.activate(state)
             # player_direction = (output[0], output[1])
             player_direction = output[0]
@@ -42,11 +42,11 @@ def game_loop(game: Game, actor: neat.nn.FeedForwardNetwork = None):
             # get mouse position in x y and convert to [0, 1) as the angle with respect player position
             mouse_x, mouse_y = pygame.mouse.get_pos()
             player_x, player_y = game.positions[0, 0] * width, game.positions[0, 1] * height
-            # angle = np.arctan2(mouse_y - player_y, mouse_x - player_x)
-            # if angle < 0:
-            #     angle += 2.0 * np.pi
-            # player_direction = angle / (2.0 * np.pi)
-            player_direction = (mouse_x - player_x, mouse_y - player_y)
+            angle = np.arctan2(mouse_y - player_y, mouse_x - player_x)
+            if angle < 0:
+                angle += 2.0 * np.pi
+            player_direction = angle / (2.0 * np.pi)
+            # player_direction = (mouse_x - player_x, mouse_y - player_y)
 
         if not game.step(player_direction):
             running = False  # Game over
