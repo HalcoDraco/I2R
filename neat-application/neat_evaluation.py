@@ -12,6 +12,7 @@ NUM_BULLETS = 24
 GENERATIONS = 250
 NUM_RUNS_PER_GENOME = 3
 MAX_FITNESS_THRESHOLD = 1000
+ENTITIES_TO_CONSIDER = 2
 
 def evaluate_genome(genome, config):
     """
@@ -38,7 +39,7 @@ def evaluate_genome(genome, config):
         step = 0
         run = True
         while step < MAX_FITNESS_THRESHOLD and run:
-            state = game.get_local_state_velocities(5)
+            state = game.get_local_state_velocities(ENTITIES_TO_CONSIDER)
             output = net.activate(state)
             # Output is expected to be two values representing x and y direction
             direction = (output[0], output[1])

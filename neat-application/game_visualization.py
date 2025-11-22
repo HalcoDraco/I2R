@@ -2,6 +2,7 @@ from game import Game
 import pygame
 import numpy as np
 import neat
+from neat_evaluation import ENTITIES_TO_CONSIDER
 
 def draw_game(window, game, width=600, height=600):
     window.fill((0, 0, 0))  # Clear screen with black
@@ -33,7 +34,7 @@ def game_loop(game: Game, actor: neat.nn.FeedForwardNetwork = None):
                 running = False
         
         if actor is not None:
-            state = game.get_local_state_velocities(5)
+            state = game.get_local_state_velocities(ENTITIES_TO_CONSIDER)
             output = actor.activate(state)
             # player_direction = (output[0], output[1])
             player_direction = output[0]

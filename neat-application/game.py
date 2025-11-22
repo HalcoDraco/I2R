@@ -74,12 +74,12 @@ class Game:
     
     def get_local_state(self, nearest_n = 1):
         """
-        Returns the relative positions of the nearest n bullets and the nearest wall.
+        Returns the relative positions of the nearest n obstacles.
 
         Parameters
         ----------
         nearest_n : int
-            Number of nearest bullets to consider.
+            Number of nearest obstacles to consider.
 
         Returns
         -------
@@ -89,28 +89,29 @@ class Game:
 
         player_pos = self.positions[0, :]
         bullet_positions = self.positions[1:, :]
-        relative_positions = bullet_positions - player_pos
-        distances = np.linalg.norm(relative_positions, axis=1)
-        nearest_bullet_indices = np.argsort(distances)[:nearest_n]
-        nearest_bullets_rel_pos = relative_positions[nearest_bullet_indices, :]
-        nearest_wall_rel_pos = np.array([
-            -player_pos[0] if player_pos[0] < 0.5 else  # Top wall
-            1.0 - player_pos[0],  # Bottom wall
-            -player_pos[1] if player_pos[1] < 0.5 else  # Left wall
-            1.0 - player_pos[1]   # Right wall
+        relative_bullets = bullet_positions - player_pos
+        relative_walls = np.array([
+            [ -player_pos[0], 0.0 ],          # Top wall
+            [ 1.0 - player_pos[0], 0.0 ],    # Bottom wall
+            [ 0.0, -player_pos[1] ],         # Left wall
+            [ 0.0, 1.0 - player_pos[1] ]     # Right wall
         ])
+        relative_positions = np.vstack((relative_bullets, relative_walls))
+        distances = np.linalg.norm(relative_positions, axis=1)
+        nearest_indices = np.argsort(distances)[:nearest_n]
+        nearest_rel_pos = relative_positions[nearest_indices, :]
+        return nearest_rel_pos.flatten()
 
-        return np.concatenate((nearest_wall_rel_pos, nearest_bullets_rel_pos.flatten()))
 
     
     def get_local_state_velocities(self, nearest_n = 1):
         """
-        Returns the position of the player and the relative positions and velocities of the nearest n bullets.
-        
+        Returns the relative positions and directions of the nearest n obstacles.
+
         Parameters
         ----------
         nearest_n : int
-            Number of nearest bullets to consider.
+            Number of nearest obstacles to consider.
 
         Returns
         -------
@@ -121,18 +122,20 @@ class Game:
         player_pos = self.positions[0, :]
         bullet_positions = self.positions[1:, :]
         bullet_directions = self.directions[1:, :]
-        relative_positions = bullet_positions - player_pos
-        distances = np.linalg.norm(relative_positions, axis=1)
-        nearest_bullet_indices = np.argsort(distances)[:nearest_n]
-        nearest_bullets_rel_pos = relative_positions[nearest_bullet_indices, :]
-        nearest_bullets_dirs = bullet_directions[nearest_bullet_indices, :]
-        nearest_wall_rel_pos = np.array([
-            -player_pos[0] if player_pos[0] < 0.5 else  # Top wall
-            1.0 - player_pos[0],  # Bottom wall
-            -player_pos[1] if player_pos[1] < 0.5 else  # Left wall
-            1.0 - player_pos[1]   # Right wall
+        directions = np.vstack((bullet_directions, np.zeros((4, 2))))  # Add zero directions for walls
+        relative_bullets = bullet_positions - player_pos
+        relative_walls = np.array([
+            [ -player_pos[0], 0.0 ],          # Top wall
+            [ 1.0 - player_pos[0], 0.0 ],    # Bottom wall
+            [ 0.0, -player_pos[1] ],         # Left wall
+            [ 0.0, 1.0 - player_pos[1] ]     # Right wall
         ])
-        return np.concatenate((nearest_wall_rel_pos, nearest_bullets_rel_pos.flatten(), nearest_bullets_dirs.flatten()))
+        relative_positions = np.vstack((relative_bullets, relative_walls))
+        distances = np.linalg.norm(relative_positions, axis=1)
+        nearest_indices = np.argsort(distances)[:nearest_n]
+        nearest_rel_pos = relative_positions[nearest_indices, :]
+        nearest_directions = directions[nearest_indices, :]
+        return np.concatenate((nearest_rel_pos.flatten(), nearest_directions.flatten()))
 
     def step(self, player_direction) -> bool:
         """
