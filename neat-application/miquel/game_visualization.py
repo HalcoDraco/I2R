@@ -1,7 +1,5 @@
 from game import Game, ENTITIES_TO_CONSIDER
 import pygame
-import numpy as np
-import neat
 
 def draw_game(window, game, width=600, height=600):
     window.fill((0, 0, 0))  # Clear screen with black
@@ -18,7 +16,7 @@ def draw_game(window, game, width=600, height=600):
     pygame.display.flip()  # Update the display
 
 
-def game_loop(game: Game, actor: neat.nn.FeedForwardNetwork = None):
+def game_loop(game: Game, actor: None):
     width, height = 600, 600
 
     pygame.init()

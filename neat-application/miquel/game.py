@@ -1,6 +1,6 @@
 import numpy as np
 
-ENTITIES_TO_CONSIDER = 5
+ENTITIES_TO_CONSIDER = 28
 
 class Game:
 

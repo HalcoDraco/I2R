@@ -1,5 +1,5 @@
 import neat 
-from game import Game
+from game import Game, ENTITIES_TO_CONSIDER
 from game_visualization import game_loop
 from neat.parallel import ParallelEvaluator
 import visualize
@@ -9,10 +9,9 @@ import multiprocessing
 CONFIG_PATH = "neat_config"
 MULTIPROCESSING = True
 NUM_BULLETS = 24
-GENERATIONS = 250
+GENERATIONS = 400
 NUM_RUNS_PER_GENOME = 3
 MAX_FITNESS_THRESHOLD = 1000
-ENTITIES_TO_CONSIDER = 2
 
 def evaluate_genome(genome, config):
     """
@@ -42,8 +41,8 @@ def evaluate_genome(genome, config):
             state = game.get_local_state_velocities(ENTITIES_TO_CONSIDER)
             output = net.activate(state)
             # Output is expected to be two values representing x and y direction
-            direction = (output[0], output[1])
-            # direction = output[0]
+            # direction = (output[0], output[1])
+            direction = output[0]
             run = game.step(direction)
             step += 1
     
